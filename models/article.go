@@ -22,8 +22,8 @@ type Article struct {
 	Users *Users `orm:"rel(fk)"`
 }
 
-// 查询article表中的所有数据
-func (a *Article) Find_all() (*Article, error) {
+// FindAll 查询article表中的所有数据
+func (a *Article) FindAll() (*Article, error) {
 	o := orm.NewOrm()
 	article := &Article{}
 	_, err := o.QueryTable("article").All(article)
@@ -33,8 +33,8 @@ func (a *Article) Find_all() (*Article, error) {
 	return nil, err
 }
 
-// 根据id在article表中找到唯一对应数据
-func (a *Article) Find_by_id(article_id int) (*Article, error) {
+// FindById 根据id在article表中找到唯一对应数据
+func (a *Article) FindById(article_id int) (*Article, error) {
 	o := orm.NewOrm()
 	article := &Article{Id: article_id}
 	err := o.Read(article, "articleid")
@@ -44,15 +44,49 @@ func (a *Article) Find_by_id(article_id int) (*Article, error) {
 	return nil, err
 }
 
-// article表与users表进行连接查询，返回10条记录。
+// FindPaginatedArticles article表与users表进行连接查询，返回10条记录。
 // 返回10条记录的原因是博客系统首页中每页肯定只能展示一部分文章，在此定为每页10篇，然后分页。
-func (a * Article) Find_paginated_articles(start int, count int) ([]*Article, error) {
+func (a * Article) FindPaginatedArticles(start int, count int) ([]*Article, error) {
 	o := orm.NewOrm()
-	var article []*Article
+	var articles []*Article
 	_, err := o.QueryTable("article").Filter("hide", 0).
-		Filter("drafted", 0).Filter("checked", 1).OrderBy("-id").Limit(count, start).All(&article)
+		Filter("drafted", 0).Filter("checked", 1).OrderBy("-id").Limit(count, start).All(&articles)
 	if err == nil {
-		return article, err
+		return articles, err
 	}
 	return nil, err
+}
+
+// GetTotalArticleNum 获取文章（未隐藏、非草稿、已审核）总数量
+func (a *Article) GetTotalArticleNum() (int64, error) {
+	o := orm.NewOrm()
+	total_article_num, err := o.QueryTable("article").Filter("hide", 0).
+		Filter("drafted", 0).Filter("checked", 1).Count()
+	if err == nil {
+		return total_article_num, err
+	}
+	return -1, err
+}
+
+// FindByCategory 按照文章类型获取文章
+func (a *Article) FindByCategory(category int, start int, count int) ([]*Article, error) {
+	o := orm.NewOrm()
+	var articles []*Article
+	_, err := o.QueryTable("article").Filter("hide", 0).Filter("drafted", 0).Filter("checked", 1).
+		Filter("category", category).OrderBy("-id").Limit(count, start).All(&articles)
+	if err == nil {
+		return articles, err
+	}
+	return nil, err
+}
+
+// GetTotalArticleNumByCategory 根据文章类型来获取文章总数量
+func (a *Article) GetTotalArticleNumByCategory(category int) (int64, error) {
+	o := orm.NewOrm()
+	total_article_num, err := o.QueryTable("article").Filter("hide", 0).
+		Filter("drafted", 0).Filter("checked", 1).Filter("category", category).Count()
+	if err == nil {
+		return total_article_num, err
+	}
+	return -1, err
 }
