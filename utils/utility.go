@@ -1,6 +1,10 @@
 package utils
 
-import beego "github.com/beego/beego/v2/server/web"
+import (
+	"crypto/md5"
+	"fmt"
+	beego "github.com/beego/beego/v2/server/web"
+)
 
 type BaseController struct {
 	beego.Controller
@@ -14,4 +18,10 @@ func (p *BaseController) AlertAndRedirect(msg string, url string) {
 	} else {
 		p.Redirect(url, 302)
 	}
+}
+
+// Md5 生成MD5密文
+func Md5(plaintext string) string {
+	plain := []byte(plaintext)
+	return fmt.Sprintf("%X", md5.Sum(plain))
 }

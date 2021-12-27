@@ -78,3 +78,34 @@ func (c *HomeController) Classify() {
 		c.AlertAndRedirect("获取文章总数失败", "")
 	}
 }
+
+// Search 搜索功能 【测试已通过】
+func (c *HomeController) Search() {
+	// 后端校验过滤无效搜索内容
+	keyword := c.GetString("keyword")
+	//var keyword string  // 获取前端参数方法2之bind
+	//c.Ctx.Input.Bind(&keyword, "keyword")
+	if len(keyword) == 0 || len(keyword) > 10 || strings.Contains(keyword, "%") {
+		fmt.Println("404")
+	}
+
+	page, _ := strconv.Atoi(c.GetString("page"))
+	page_size := 10
+	start := (page - 1) * page_size
+	var article models.Article
+	// 获取搜索结果
+	if result, err := article.FindByHeadline(keyword, start, page_size); err == nil {
+		for _, v := range result{
+			fmt.Println("搜索结果：", v.Id)
+		}
+	} else {
+		fmt.Println("error getting result:", err)
+	}
+	// 搜索结果对应页数
+	if total_article_num, err := article.GetTotalArticleNumByKeyword(keyword); err == nil {
+		total_page_num := math.Ceil(float64(int(total_article_num)) / float64(page_size))  // golang的除法在计算小数/大数时=0，利用float64可避此坑
+		fmt.Println("搜索总页数：", total_article_num, total_page_num)
+	} else {
+		c.AlertAndRedirect("获取文章总数失败", "")
+	}
+}

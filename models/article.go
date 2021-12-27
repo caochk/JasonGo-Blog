@@ -19,7 +19,7 @@ type Article struct {
 	Checked int8
 	CreateTime time.Time
 	UpdateTime time.Time
-	Users *Users `orm:"rel(fk)"`
+	Users *User `orm:"rel(fk)"`
 }
 
 // FindAll 查询article表中的所有数据
@@ -85,6 +85,29 @@ func (a *Article) GetTotalArticleNumByCategory(category int) (int64, error) {
 	o := orm.NewOrm()
 	total_article_num, err := o.QueryTable("article").Filter("hide", 0).
 		Filter("drafted", 0).Filter("checked", 1).Filter("category", category).Count()
+	if err == nil {
+		return total_article_num, err
+	}
+	return -1, err
+}
+
+// FindByHeadline 根据关键词检索文章标题以找到匹配文章
+func (a *Article) FindByHeadline(keyword string, start int, count int) ([]*Article, error) {
+	o := orm.NewOrm()
+	var articles []*Article
+	_, err := o.QueryTable("article").Filter("hide", 0).Filter("drafted", 0).
+		Filter("checked", 1).Filter("headline__icontains", keyword).OrderBy("-id").Limit(count, start).All(&articles)
+	if err == nil {
+		return articles, err
+	}
+	return nil, err
+}
+
+// GetTotalArticleNumByKeyword 按搜索关键字获取文章（未隐藏、非草稿、已审核）总数量
+func (a *Article) GetTotalArticleNumByKeyword(keyword string) (int64, error) {
+	o := orm.NewOrm()
+	total_article_num, err := o.QueryTable("article").Filter("hide", 0).
+		Filter("drafted", 0).Filter("checked", 1).Filter("headline__icontains", keyword).Count()
 	if err == nil {
 		return total_article_num, err
 	}

@@ -21,7 +21,8 @@ func init()  {
 		fmt.Println(err)
 	}
 	orm.RegisterModel(new(Article))
-	orm.RegisterModel(new(Users))
+	orm.RegisterModel(new(User))
+	orm.RegisterModel(new(Credit))
 
 	orm.RunSyncdb("default", false, true)
 }
