@@ -6,20 +6,19 @@ import (
 )
 
 type Article struct {
-	Id       int `orm:"pk"`
-	UserId   int
-	Category int8
-	Headline string
-	Content string
-	Thumbnail string
-	Credit int
-	Readcount int
-	Hide int8
-	Drafted int8
-	Checked int8
+	Id         int `orm:"pk"`
+	Category   int8
+	Headline   string
+	Content    string
+	Thumbnail  string
+	Credit     int
+	Readcount  int
+	Hide       int8
+	Drafted    int8
+	Checked    int8
 	CreateTime time.Time
 	UpdateTime time.Time
-	Users *User `orm:"rel(fk)"`
+	User       *User `orm:"rel(fk)"`
 }
 
 // FindAll 查询article表中的所有数据
@@ -33,31 +32,32 @@ func (a *Article) FindAll() (*Article, error) {
 	return nil, err
 }
 
-// FindById 根据id在article表中找到唯一对应数据
+// FindById 根据id在article表中找到唯一对应数据【测试通过】
 func (a *Article) FindById(article_id int) (*Article, error) {
 	o := orm.NewOrm()
 	article := &Article{Id: article_id}
-	err := o.Read(article, "articleid")
+	err := o.Read(article, "id")
 	if err == nil {
 		return article, err
 	}
 	return nil, err
 }
 
-// FindPaginatedArticles article表与users表进行连接查询，返回10条记录。
+// FindPaginatedArticles article表与users表进行连接查询，返回10条记录。【已测试通过】
 // 返回10条记录的原因是博客系统首页中每页肯定只能展示一部分文章，在此定为每页10篇，然后分页。
-func (a * Article) FindPaginatedArticles(start int, count int) ([]*Article, error) {
+func (a *Article) FindPaginatedArticles(start int, count int) ([]Article, error) {
 	o := orm.NewOrm()
-	var articles []*Article
+	var articles []Article
 	_, err := o.QueryTable("article").Filter("hide", 0).
-		Filter("drafted", 0).Filter("checked", 1).OrderBy("-id").Limit(count, start).All(&articles)
+		Filter("drafted", 0).Filter("checked", 1).OrderBy("-id").Limit(count, start).RelatedSel().All(&articles) // TODO:RelSel不起作用。永远查出来的user都是同一个
 	if err == nil {
+		//fmt.Println(articles)
 		return articles, err
 	}
 	return nil, err
 }
 
-// GetTotalArticleNum 获取文章（未隐藏、非草稿、已审核）总数量
+// GetTotalArticleNum 获取文章（未隐藏、非草稿、已审核）总数量【已测试通过】
 func (a *Article) GetTotalArticleNum() (int64, error) {
 	o := orm.NewOrm()
 	total_article_num, err := o.QueryTable("article").Filter("hide", 0).
@@ -68,7 +68,7 @@ func (a *Article) GetTotalArticleNum() (int64, error) {
 	return -1, err
 }
 
-// FindByCategory 按照文章类型获取文章
+// FindByCategory 按照文章类型获取文章【已测试通过】
 func (a *Article) FindByCategory(category int, start int, count int) ([]*Article, error) {
 	o := orm.NewOrm()
 	var articles []*Article
@@ -80,7 +80,7 @@ func (a *Article) FindByCategory(category int, start int, count int) ([]*Article
 	return nil, err
 }
 
-// GetTotalArticleNumByCategory 根据文章类型来获取文章总数量
+// GetTotalArticleNumByCategory 根据文章类型来获取文章总数量【已测试通过】
 func (a *Article) GetTotalArticleNumByCategory(category int) (int64, error) {
 	o := orm.NewOrm()
 	total_article_num, err := o.QueryTable("article").Filter("hide", 0).
@@ -91,7 +91,7 @@ func (a *Article) GetTotalArticleNumByCategory(category int) (int64, error) {
 	return -1, err
 }
 
-// FindByHeadline 根据关键词检索文章标题以找到匹配文章
+// FindByHeadline 根据关键词检索文章标题以找到匹配文章【已测试通过】
 func (a *Article) FindByHeadline(keyword string, start int, count int) ([]*Article, error) {
 	o := orm.NewOrm()
 	var articles []*Article
@@ -103,7 +103,7 @@ func (a *Article) FindByHeadline(keyword string, start int, count int) ([]*Artic
 	return nil, err
 }
 
-// GetTotalArticleNumByKeyword 按搜索关键字获取文章（未隐藏、非草稿、已审核）总数量
+// GetTotalArticleNumByKeyword 按搜索关键字获取文章（未隐藏、非草稿、已审核）总数量【已测试通过】
 func (a *Article) GetTotalArticleNumByKeyword(keyword string) (int64, error) {
 	o := orm.NewOrm()
 	total_article_num, err := o.QueryTable("article").Filter("hide", 0).

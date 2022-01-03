@@ -7,14 +7,15 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	. "my_blog/models"
 	_ "my_blog/routers"
+	"my_blog/utils"
 )
 
-func init()  {
+func init() {
 	var mysqlurls, _ = beego.AppConfig.String("mysqlurls")
 	var mysqlport, _ = beego.AppConfig.String("mysqlport")
 	var mysqluser, _ = beego.AppConfig.String("mysqluser")
 	var mysqlpass, _ = beego.AppConfig.String("mysqlpass")
-	var mysqldb, _  = beego.AppConfig.String("mysqldb")
+	var mysqldb, _ = beego.AppConfig.String("mysqldb")
 	var dsn = mysqluser + ":" + mysqlpass + "@tcp(" + mysqlurls + ":" + mysqlport + ")/" + mysqldb + "?charset=utf8&loc=Asia%2FShanghai"
 	err := orm.RegisterDataBase("default", "mysql", dsn)
 	if err != nil {
@@ -28,6 +29,18 @@ func init()  {
 }
 
 func main() {
+	// 注册模板函数：下一页
+	if err := beego.AddFuncMap("NextPage", utils.NextPage); err != nil {
+		fmt.Println("[ERROR] next page:", err)
+	}
+	// 注册模板函数：上一页
+	if err := beego.AddFuncMap("PrevPage", utils.PrevPage); err != nil {
+		fmt.Println("[ERROR] prev page:", err)
+	}
+	err := beego.AddFuncMap("DealTotalPage", utils.DealTotalPage)
+	if err != nil {
+		return
+	}
+
 	beego.Run()
 }
-

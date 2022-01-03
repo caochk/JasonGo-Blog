@@ -25,3 +25,28 @@ func Md5(plaintext string) string {
 	plain := []byte(plaintext)
 	return fmt.Sprintf("%X", md5.Sum(plain))
 }
+
+// PrevPage 前往上一页，用于模板
+func PrevPage(page int) int {
+	page--
+	return page
+}
+
+// NextPage 前往下一页，用于模板
+func NextPage(page int) int {
+	page++
+	return page
+}
+
+// DealTotalPage 将total_page_num为数组类型
+func DealTotalPage(total_page_num float64) []float64 {
+	var total_page_slice = make([]float64, int(total_page_num))
+	var count = float64(1)
+	for true {
+		if count > total_page_num {
+			break
+		}
+		total_page_slice = append(total_page_slice, count)
+	}
+	return total_page_slice
+}
