@@ -17,7 +17,7 @@ type HomeController struct {
 
 // Home 展示首页文章列表【已测试通过】
 func (c *HomeController) Home() {
-	//c.TplName = "index.html"
+	c.TplName = "index.html"
 	// 展示首页文章
 	article := models.Article{}
 	page_size := 10

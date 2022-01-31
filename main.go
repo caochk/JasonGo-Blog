@@ -24,8 +24,11 @@ func init() {
 	orm.RegisterModel(new(Article))
 	orm.RegisterModel(new(User))
 	orm.RegisterModel(new(Credit))
+	orm.RegisterModel(new(Favorite))
 
-	orm.RunSyncdb("default", false, true)
+	if err := orm.RunSyncdb("default", false, true); err != nil {
+		fmt.Println("[ERROR] sync db:", err)
+	}
 }
 
 func main() {
