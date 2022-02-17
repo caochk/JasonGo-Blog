@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"fmt"
 	beego "github.com/beego/beego/v2/server/web"
 	"math"
@@ -9,6 +10,9 @@ import (
 	"strconv"
 	"strings"
 )
+
+var ctx = context.Background()
+var rdb = utils.InitRedisClient()
 
 type HomeController struct {
 	utils.BaseController
@@ -21,10 +25,11 @@ func (c *HomeController) Home() {
 	// 展示首页文章
 	article := models.Article{}
 	page_size := 10
-	if result, err := article.FindPaginatedArticles(0, 10); err == nil {
+	if result, err := article.FindPaginatedArticles(0, page_size); err == nil {
 		if total_article_num, err := article.GetTotalArticleNum(); err == nil {
 			total_page_num := math.Ceil(float64(int(total_article_num)) / float64(page_size))
 			fmt.Println("总页数：", total_page_num)
+			fmt.Println("获取到的结果：", result)
 			c.Data["result"] = result
 			fmt.Println("1")
 			c.Data["page"] = 1
@@ -35,6 +40,29 @@ func (c *HomeController) Home() {
 			fmt.Println("获取文章总数失败")
 			//c.AlertAndRedirect("", "")
 		}
+	}
+}
+
+// HomeRedis 从缓存读取首页文章列表【测试通过】
+func (c HomeController) HomeRedis()  {
+	// 展示首页文章
+	var page_size int64 = 10
+	if articles, err := rdb.ZRevRange(ctx, "article", 0, page_size).Result(); err == nil {
+		if total_article_num, err := rdb.ZCard(ctx, "article").Result(); err == nil {
+			total_page_num := math.Ceil(float64(int(total_article_num)) / float64(page_size))
+			fmt.Println("总页数：", total_page_num)
+			fmt.Println("获取到的结果：", articles)
+			c.Data["result"] = articles
+			fmt.Println("1")
+			c.Data["page"] = 1
+			fmt.Println("2")
+			c.Data["total_page_num"] = total_page_num
+			fmt.Println("3")
+		} else {
+			fmt.Println("获取文章总数失败:", err)
+		}
+	} else {
+		fmt.Println("从缓存中获取指定数量文章失败：", err)
 	}
 }
 

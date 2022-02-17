@@ -21,13 +21,13 @@ type Article struct {
 	User       *User `orm:"rel(fk)"`
 }
 
-// FindAll 查询article表中的所有数据
-func (a *Article) FindAll() (*Article, error) {
+// FindAllArticles 查询article表中的所有数据
+func (a *Article) FindAllArticles() ([]*Article, error) {
 	o := orm.NewOrm()
-	article := &Article{}
-	_, err := o.QueryTable("article").All(article)
+	var articles []*Article
+	_, err := o.QueryTable("article").All(&articles)
 	if err == nil {
-		return article, err
+		return articles, err
 	}
 	return nil, err
 }

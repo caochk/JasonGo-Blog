@@ -2,6 +2,7 @@ package routers
 
 import (
 	beego "github.com/beego/beego/v2/server/web"
+	"my_blog/cache"
 	"my_blog/controllers"
 )
 
@@ -16,4 +17,6 @@ func init() {
 	beego.Router("/article", &controllers.ArticleController{}, "get:GetArticleDetail")
 	beego.Router("/favorite", &controllers.ArticleController{}, "post:AddToFavorite")
 	beego.Router("/favorite", &controllers.ArticleController{}, "delete:CancelFavorite")
+	beego.Router("/redis2home", &controllers.HomeController{}, "get:HomeRedis")
+	beego.Router("/redis", &cache.UserCacheController{}, "get:Users2Redis")
 }

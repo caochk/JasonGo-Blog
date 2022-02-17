@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"context"
+	//"context"
 	"fmt"
 	beego "github.com/beego/beego/v2/server/web"
 	"github.com/go-redis/redis/v8"
@@ -12,8 +12,8 @@ import (
 	"time"
 )
 
-var ctx = context.Background()
-var rdb = utils.InitRedisClient()
+//var ctx = context.Background()
+//var rdb = utils.InitRedisClient()
 
 type LoginController struct {
 	utils.BaseController

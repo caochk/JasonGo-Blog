@@ -99,3 +99,14 @@ func (m *User) FindById(id int) (User, error) {
 		return user, err
 	}
 }
+
+// FindAllUsers 查询user表中的所有数据
+func (User) FindAllUsers() ([]*User, error) {
+	o := orm.NewOrm()
+	var users []*User
+	_, err := o.QueryTable("user").All(&users)
+	if err == nil {
+		return users, err
+	}
+	return nil, err
+}
