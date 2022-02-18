@@ -18,5 +18,5 @@ func init() {
 	beego.Router("/favorite", &controllers.ArticleController{}, "post:AddToFavorite")
 	beego.Router("/favorite", &controllers.ArticleController{}, "delete:CancelFavorite")
 	beego.Router("/redis2home", &controllers.HomeController{}, "get:HomeRedis")
-	beego.Router("/redis", &cache.UserCacheController{}, "get:Users2Redis")
+	beego.Router("/redis", &cache.ArticleCacheController{}, "get:Articles2Redis")
 }

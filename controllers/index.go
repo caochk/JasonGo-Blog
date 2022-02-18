@@ -2,8 +2,10 @@ package controllers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	beego "github.com/beego/beego/v2/server/web"
+	"github.com/go-redis/redis/v8"
 	"math"
 	"my_blog/models"
 	"my_blog/utils"
@@ -31,37 +33,74 @@ func (c *HomeController) Home() {
 			fmt.Println("总页数：", total_page_num)
 			fmt.Println("获取到的结果：", result)
 			c.Data["result"] = result
-			fmt.Println("1")
 			c.Data["page"] = 1
-			fmt.Println("2")
 			c.Data["total_page_num"] = total_page_num
-			fmt.Println("3")
 		} else {
 			fmt.Println("获取文章总数失败")
-			//c.AlertAndRedirect("", "")
 		}
 	}
 }
 
 // HomeRedis 从缓存读取首页文章列表【测试通过】
-func (c HomeController) HomeRedis()  {
+func (c HomeController) HomeRedis() {
 	// 展示首页文章
 	var page_size int64 = 10
-	if articles, err := rdb.ZRevRange(ctx, "article", 0, page_size).Result(); err == nil {
-		if total_article_num, err := rdb.ZCard(ctx, "article").Result(); err == nil {
+	if articles, err := rdb.ZRevRange(ctx, "article", 0, page_size).Result(); err == nil { // 在缓存中查找到了
+		if total_article_num, err := rdb.ZCard(ctx, "article").Result(); err == nil { // 从缓存的有序集合中读取文章总数
 			total_page_num := math.Ceil(float64(int(total_article_num)) / float64(page_size))
 			fmt.Println("总页数：", total_page_num)
 			fmt.Println("获取到的结果：", articles)
 			c.Data["result"] = articles
-			fmt.Println("1")
 			c.Data["page"] = 1
-			fmt.Println("2")
 			c.Data["total_page_num"] = total_page_num
-			fmt.Println("3")
-		} else {
-			fmt.Println("获取文章总数失败:", err)
 		}
-	} else {
+	} else if err == redis.Nil { // 缓存中为空，得去MySQL查询了
+		article := models.Article{}
+		page_size := 10
+		if articles, err := article.FindPaginatedArticles(0, page_size); err != nil { // 查询MySQL时出错
+			fmt.Println("获取文章总数失败")
+			return
+		} else {
+			if articles == nil { // MySQL中也查不到
+				fmt.Println("MySQL中也未查到")
+			} else { // MySQL中查到了
+				if total_article_num, err := article.GetTotalArticleNum(); err == nil {
+					total_page_num := math.Ceil(float64(int(total_article_num)) / float64(page_size))
+					// 返回结果
+					fmt.Println("总页数：", total_page_num)
+					//fmt.Println("获取到的结果：", articles)
+					c.Data["result"] = articles
+					c.Data["page"] = 1
+					c.Data["total_page_num"] = total_page_num
+					// 并将结果写入缓存
+					for _, article := range articles {
+						article_map := map[string]string{
+							"user_id":     strconv.Itoa(article.User.Id),
+							"category":    strconv.Itoa(int(article.Category)),
+							"headline":    article.Headline,
+							"content":     article.Content,
+							"thumbnail":   article.Thumbnail,
+							"credit":      strconv.Itoa(article.Credit),
+							"readcount":   strconv.Itoa(article.Readcount),
+							"hide":        strconv.Itoa(int(article.Hide)),
+							"drafted":     strconv.Itoa(int(article.Drafted)),
+							"checked":     strconv.Itoa(int(article.Checked)),
+							"create_time": article.CreateTime.Format("2006-01-02 15:04:05"),
+							"update_time": article.UpdateTime.Format("2006-01-02 15:04:05"),
+						}
+						artile_json, _ := json.Marshal(article_map)
+						article_str := string(artile_json)
+						var article_zset = redis.Z{}
+						article_zset.Score = float64(article.Id)
+						article_zset.Member = article_str
+						rdb.ZAdd(ctx, "article", &article_zset)
+					}
+				} else {
+					fmt.Println("文章列表是查到了，结果获取文章总数时出错")
+				}
+			}
+		}
+	} else { // 缓存查询出错
 		fmt.Println("从缓存中获取指定数量文章失败：", err)
 	}
 }
@@ -90,6 +129,26 @@ func (c *HomeController) Paginate() {
 		}
 	} else {
 		fmt.Println("error getting result:", err)
+	}
+}
+
+// PaginateRedis 从缓存读取首页之后页面的文章列表
+func (c HomeController) PaginateRedis() {
+	// 展示首页文章
+	var page_size int64 = 10
+	if articles, err := rdb.ZRevRange(ctx, "article", 0, page_size).Result(); err == nil {
+		if total_article_num, err := rdb.ZCard(ctx, "article").Result(); err == nil {
+			total_page_num := math.Ceil(float64(int(total_article_num)) / float64(page_size))
+			fmt.Println("总页数：", total_page_num)
+			fmt.Println("获取到的结果：", articles)
+			c.Data["result"] = articles
+			c.Data["page"] = 1
+			c.Data["total_page_num"] = total_page_num
+		} else {
+			fmt.Println("获取文章总数失败:", err)
+		}
+	} else {
+		fmt.Println("从缓存中获取指定数量文章失败：", err)
 	}
 }
 
