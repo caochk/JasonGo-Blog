@@ -7,7 +7,7 @@ import (
 )
 
 func init() {
-	beego.Router("/", &controllers.HomeController{}, "get:Home")
+	beego.Router("/", &controllers.HomeController{}, "get:HomeRedis")
 	beego.Router("/page/:page([0-9]+)", &controllers.HomeController{}, "get:Paginate")
 	beego.Router("/category/:category_page", &controllers.HomeController{}, "get:Classify")
 	beego.Router("/search", &controllers.HomeController{}, "get:Search")

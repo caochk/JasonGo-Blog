@@ -3,3 +3,4 @@ my_blog.exe
 go.mod
 go.sum
 /conf/app.conf
+my_blog
