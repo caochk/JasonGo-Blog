@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/beego/beego/v2/client/orm"
 	beego "github.com/beego/beego/v2/server/web"
+	_ "github.com/beego/beego/v2/server/web/session/redis"
 	_ "github.com/go-sql-driver/mysql"
 	. "my_blog/models"
 	_ "my_blog/routers"

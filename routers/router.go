@@ -13,7 +13,7 @@ func init() {
 	beego.Router("/search", &controllers.HomeController{}, "get:Search")
 	beego.Router("/login", &controllers.LoginController{}, "post:Login")
 	beego.Router("/ecode", &controllers.LoginController{}, "post:EcodeRedis")
-	beego.Router("/signup", &controllers.LoginController{}, "post:SignupRedis")
+	beego.Router("/signup", &controllers.LoginController{}, "post:SignupJWT")
 	beego.Router("/article", &controllers.ArticleController{}, "get:GetArticleDetail")
 	beego.Router("/favorite", &controllers.ArticleController{}, "post:AddToFavorite")
 	beego.Router("/favorite", &controllers.ArticleController{}, "delete:CancelFavorite")
