@@ -3,7 +3,6 @@ package controllers
 import (
 	//"context"
 	"fmt"
-	beego "github.com/beego/beego/v2/server/web"
 	"github.com/go-redis/redis/v8"
 	"github.com/golang-jwt/jwt"
 	"my_blog/models"
@@ -20,7 +19,7 @@ import (
 
 type LoginController struct {
 	utils.BaseController
-	beego.Controller
+	//beego.Controller
 }
 
 type RespondMsg struct {
@@ -61,6 +60,65 @@ func (c *LoginController) Login() {
 				// 积分更新模块，每次登录可获得1积分【未完全】
 				user.UpdateCredit(1)
 				// 设置cookie实现一个月自动登录【待补】
+			} else {
+				fmt.Println("login-fail")
+			}
+		} else {
+			fmt.Println("[ERROR] find by username:", err)
+		}
+	}
+}
+
+// LoginJWT 利用JWT进行用户认证并引入Redis后的登录函数
+func (c *LoginController) LoginJWT() {
+	username := strings.Trim(c.GetString("username"), " ")
+	password := strings.Trim(c.GetString("password"), " ")
+	vcode := strings.ToLower(strings.Trim(c.GetString("vcode"), " "))
+
+	var user models.User
+	var resp respUtils.Resp
+	// 先校验图形验证码是否正确
+	if vcode != c.GetSession("vcode") { // TODO 编写图形验证码生成函数并入Redis
+		fmt.Println("vcode-error")
+	} else {
+		password = utils.Md5(password) // 用户输入密码加密，之后用于验证密码是否匹配
+		if result, err := user.FindByUsername(username); err == nil {
+			if len(result) == 1 && result[0].Password == password { // 密码验证通过，登录成功
+				// 在session中保存当前登录用户的一系列信息
+				//if err := c.SetSession("islogin", true); err != nil {
+				//	fmt.Println("[ERROR] set session of islogin:", err)
+				//}
+				//if err := c.SetSession("userid", result[0].Id); err != nil {
+				//	fmt.Println("[ERROR] set session of userid:", err)
+				//}
+				//if err := c.SetSession("username", result[0].Username); err != nil {
+				//	fmt.Println("[ERROR] set session of userName:", err)
+				//}
+				//if err := c.SetSession("nickname", result[0].Nickname); err != nil {
+				//	fmt.Println("[ERROR] set session of nickname:", err)
+				//}
+				//if err := c.SetSession("role", result[0].Role); err != nil {
+				//	fmt.Println("[ERROR] set session of role:", err)
+				//}
+
+				// 生成令牌
+				claims := make(jwt.MapClaims)
+				claims["islogin"] = true
+				claims["userid"] = result[0].Id
+				claims["username"] = result[0].Username
+				claims["nickname"] = result[0].Nickname
+				claims["role"] = result[0].Role
+				claims["exp"] = time.Now().Add(time.Hour * 2).Unix() // 设置该token在当前时间的两小时后过期，届时需重新输密码
+				fmt.Println("声明：", claims)
+				signedToken := jwtUtils.BuildToken(claims)
+				fmt.Println("签名后的令牌：", signedToken)
+
+				// 积分更新模块，每次登录可获得1积分【未完全】
+				user.UpdateCredit(1)
+
+				respond := resp.NewRespWithData(respUtils.SUCCESS_CODE, "reg-pass", signedToken)
+				fmt.Println("转换为字节流的token：", respond.ToBytes())
+				c.Ctx.Output.Body(respond.ToBytes())
 			} else {
 				fmt.Println("login-fail")
 			}
@@ -286,7 +344,7 @@ func (c *LoginController) SignupRedis() string {
 	}
 }
 
-// 引入JWT、Redis后的注册函数
+// SignupJWT 引入JWT、Redis后的注册函数
 func (c *LoginController) SignupJWT() {
 	username := strings.Trim(c.GetString("username"), " ")
 	password := strings.Trim(c.GetString("password"), " ")

@@ -11,7 +11,7 @@ func init() {
 	beego.Router("/page/:page([0-9]+)", &controllers.HomeController{}, "get:Paginate")
 	beego.Router("/category/:category_page", &controllers.HomeController{}, "get:Classify")
 	beego.Router("/search", &controllers.HomeController{}, "get:Search")
-	beego.Router("/login", &controllers.LoginController{}, "post:Login")
+	beego.Router("/login", &controllers.LoginController{}, "post:LoginJWT")
 	beego.Router("/ecode", &controllers.LoginController{}, "post:EcodeRedis")
 	beego.Router("/signup", &controllers.LoginController{}, "post:SignupJWT")
 	beego.Router("/article", &controllers.ArticleController{}, "get:GetArticleDetail")
@@ -19,4 +19,7 @@ func init() {
 	beego.Router("/favorite", &controllers.ArticleController{}, "delete:CancelFavorite")
 	beego.Router("/redis2home", &controllers.HomeController{}, "get:HomeRedis")
 	beego.Router("/redis", &cache.ArticleCacheController{}, "get:Articles2Redis")
+
+	// 过滤器
+	beego.InsertFilter("/*", beego.BeforeRouter, Filter) // 寻找路由之前进行过滤拦截
 }

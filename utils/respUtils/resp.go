@@ -3,9 +3,9 @@ package respUtils
 import "encoding/json"
 
 const (
-	OK           = "OK" // 操作成功msg
-	SUCCESS_CODE = 200
-	ERROR_CODE   = -1
+	SUCCESS_CODE   = 200
+	ERROR_CODE     = -1
+	TOKEN_ERR_CODE = -2
 	// Redis
 	REDIS_ERR = "redisErr"
 )
