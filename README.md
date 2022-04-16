@@ -29,6 +29,7 @@ orm：beego自带（_未来打算换成gorm，因为个人感觉beego自带的or
 - [ ] 接入Redis缓存   
     - 【读】先读Redis，未查到则读MySQL，读到后往Redis存一份
     - 【写】先写MySQL，后定期更新至Redis
+- [ ] 引入布隆过滤器
 - [ ] 利用Redis实现自动登录
 - [ ] 用户认证方式由session改为JWT
     - 同时引入Redis解决用户手动退出登录时token尚未过期问题
