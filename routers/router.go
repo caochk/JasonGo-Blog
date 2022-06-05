@@ -19,7 +19,9 @@ func init() {
 	beego.Router("/favorite", &controllers.ArticleController{}, "delete:CancelFavorite")
 	beego.Router("/redis2home", &controllers.HomeController{}, "get:HomeRedis")
 	beego.Router("/redis", &cache.ArticleCacheController{}, "get:Articles2Redis")
+	beego.Router("/addcomment", &controllers.CommentController{}, "post:AddComment")
+	//beego.Router("/close", &controllers.HomeController{}, "post:Close")
 
 	// 过滤器
-	beego.InsertFilter("/*", beego.BeforeRouter, Filter) // 寻找路由之前进行过滤拦截
+	//beego.InsertFilter("/*", beego.BeforeRouter, Filter) // 寻找路由之前进行过滤拦截
 }

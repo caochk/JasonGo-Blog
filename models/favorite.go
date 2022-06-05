@@ -15,7 +15,7 @@ type Favorite struct {
 	UpdateTime time.Time `orm:"auto_now;type(datetime)"`
 }
 
-// Like 收藏文章【测试通过】
+// Like 收藏文章【测试通过】（逻辑有问题）
 func (m *Favorite) Like(article_id int, user_id int) error {
 	o := orm.NewOrm()
 	user := &User{Id: user_id}
@@ -25,7 +25,7 @@ func (m *Favorite) Like(article_id int, user_id int) error {
 		Article:  article,
 		Canceled: 0,
 	}
-	if created, _, err := o.ReadOrCreate(&favorite, "article_id"); err == nil {
+	if created, _, err := o.ReadOrCreate(&favorite, "article_id", "user_id"); err == nil {
 		if created { // 原不存在，现已创建
 			fmt.Println("insert an article to favorite.")
 			return nil

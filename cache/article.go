@@ -18,7 +18,7 @@ type ArticleCacheController struct {
 }
 
 // Articles2Redis 将MySQL中article表的数据以有序集合类型写入Redis【测试通过】 TODO 后续将此函数改造为定时任务，后期能否将其协程化
-func (ArticleCacheController)Articles2Redis()  {
+func (ArticleCacheController) Articles2Redis() {
 	article_model := models.Article{}
 	if articles, err := article_model.FindAllArticles(); err == nil {
 		for _, article := range articles {
@@ -32,11 +32,11 @@ func (ArticleCacheController)Articles2Redis()  {
 				"readcount":   strconv.Itoa(article.Readcount),
 				"hide":        strconv.Itoa(int(article.Hide)),
 				"drafted":     strconv.Itoa(int(article.Drafted)),
-				"checked": strconv.Itoa(int(article.Checked)),
+				"checked":     strconv.Itoa(int(article.Checked)),
 				"create_time": article.CreateTime.Format("2006-01-02 15:04:05"),
 				"update_time": article.UpdateTime.Format("2006-01-02 15:04:05"),
 			}
-			artile_json,_ := json.Marshal(article_map)
+			artile_json, _ := json.Marshal(article_map)
 			article_str := string(artile_json)
 			var article_zset = redis.Z{}
 			article_zset.Score = float64(article.Id)
@@ -44,4 +44,10 @@ func (ArticleCacheController)Articles2Redis()  {
 			rdb.ZAdd(ctx, "article", &article_zset)
 		}
 	}
+}
+
+// FavoriteArticle2Redis 用户收藏的文章加入缓存
+func (ArticleCacheController) FavoriteArticle2Redis(userId int, articleId int) {
+	key := "favoriteArticle:" + strconv.Itoa(userId)
+	rdb.SAdd(ctx, key, articleId)
 }

@@ -11,9 +11,14 @@ import (
 	"my_blog/utils"
 	"strconv"
 	"strings"
+	"time"
 )
 
-var ctx = context.Background()
+//var ctx = context.Background()
+// 新建上下文
+//var ctx = context.Background()
+// 在初始上下文的基础上新建带取消功能的上下文
+var ctx, cancel = context.WithCancel(context.Background())
 var rdb = utils.InitRedisClient()
 
 type HomeController struct {
@@ -233,8 +238,30 @@ func (c *HomeController) Classify() {
 	}
 }
 
+//func (c *HomeController) SearchExecutor() {
+//	var resp respUtils.Resp
+//	fmt.Println("进入搜索执行者")
+//	//var ctx context.Context
+//	keyword := c.GetString("keyword")
+//	page, _ := strconv.Atoi(c.GetString("page"))
+//	select {
+//	case <-c.Search(keyword, page):
+//		fmt.Println("进入通道一")
+//		//res := <-c.Search()
+//		fmt.Println("Completed")
+//	case <-ctx.Done():
+//		fmt.Println("进入通道二")
+//		fmt.Println("Canceled")
+//		c.Data["json"] = resp.NewResp(respUtils.ERROR_CODE, "Canceled")
+//		c.ServeJSON()
+//	}
+//}
+
 // Search 搜索功能 【测试已通过】
 func (c *HomeController) Search() {
+	//res := make(chan int, 3)
+	time.Sleep(10 * time.Second)
+
 	// 后端校验过滤无效搜索内容
 	keyword := c.GetString("keyword")
 	//var keyword string  // 获取前端参数方法2之bind
@@ -251,6 +278,10 @@ func (c *HomeController) Search() {
 	if result, err := article.FindByHeadline(keyword, start, page_size); err == nil {
 		for _, v := range result {
 			fmt.Println("搜索结果：", v.Id)
+
+			//res <- v.Id
+			//fmt.Println("写入通道完毕")
+			//return res
 		}
 	} else {
 		fmt.Println("error getting result:", err)
@@ -262,4 +293,12 @@ func (c *HomeController) Search() {
 	} else {
 		c.AlertAndRedirect("获取文章总数失败", "")
 	}
+
+	//res <- -1
+	//return res
 }
+
+// Close 标签页关闭时调用一下该函数（临时）（后续打算应用至网站的方方面面以实现通过context通知作业协程退出）TODO 提供一种思路，通过SearchExecutor函数进行了尝试，暂时还有漏洞。
+//func (c HomeController) Close() {
+//	cancel()
+//}
