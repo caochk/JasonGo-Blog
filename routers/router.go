@@ -20,6 +20,8 @@ func init() {
 	beego.Router("/redis2home", &controllers.HomeController{}, "get:HomeRedis")
 	beego.Router("/redis", &cache.ArticleCacheController{}, "get:Articles2Redis")
 	beego.Router("/addcomment", &controllers.CommentController{}, "post:AddComment")
+	beego.Router("/sendredpackage", &controllers.CreditController{}, "post:SendRedPackage")
+	beego.Router("/getredpackage", &controllers.CreditController{}, "post:GetRedPackage")
 	//beego.Router("/close", &controllers.HomeController{}, "post:Close")
 
 	// 过滤器
