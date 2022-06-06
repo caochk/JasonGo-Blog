@@ -55,13 +55,15 @@ func (c CreditController) splitRedPackage(totalCredit int, redPackageNum int) []
 	// 已经被抢掉的积分
 	var usedCredit = 0
 	// 每次抢到的积分
-	var redPackageNums = make([]int, 5)
+	var redPackageNums = make([]int, 0)
 	for i := 0; i < redPackageNum; i++ {
 		if i == redPackageNum-1 {
-			redPackageNums[i] = totalCredit - usedCredit
+			redPackageNums = append(redPackageNums, totalCredit-usedCredit)
+			//redPackageNums[i] = totalCredit - usedCredit
 		} else {
 			avgCredit := ((totalCredit - usedCredit) / (redPackageNum - i)) * 2
-			redPackageNums[i] = 1 + rand.Intn(avgCredit-1)
+			redPackageNums = append(redPackageNums, 1+rand.Intn(avgCredit-1))
+			//redPackageNums[i] = 1 + rand.Intn(avgCredit-1)
 		}
 		usedCredit = usedCredit + redPackageNums[i]
 	}
