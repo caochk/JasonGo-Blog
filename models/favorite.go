@@ -87,3 +87,10 @@ func (m *Favorite) Dislike(article_id int, user_id int) error {
 	//	return nil
 	//}
 }
+
+// TableUnique 以user_id, article_id建立联合索引，加快查询速度
+func (m *Favorite) TableUnique() [][]string {
+	return [][]string{
+		[]string{"Article", "User"},
+	}
+}

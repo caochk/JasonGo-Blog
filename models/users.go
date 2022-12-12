@@ -13,27 +13,28 @@ import (
 
 type User struct {
 	//beego.Controller  // 写了会报错：panic: reflect: call of reflect.Value.Interface on zero Value
-	Id int `orm:"pk"`
-	Username string
-	Password string
-	Nickname string
-	Avatar string
-	Qq string
-	Role string
-	Credit int
+	Id         int    `orm:"pk"`
+	Username   string `orm:"unique"`
+	Password   string
+	Nickname   string
+	Avatar     string
+	Qq         string
+	Role       string
+	Credit     int
 	CreateTime time.Time
 	UpdateTime time.Time
 }
+
 var c beego.Controller
 
 // FindByUsername 查询用户名（用于注册时判断用户名是否已注册、还用于登录校验）【测试通过】
 func (u *User) FindByUsername(username string) ([]*User, error) {
 	o := orm.NewOrm()
 	var users []*User
-	_, err := o.QueryTable("user").Filter("username", username).All(&users)  // 用.One()时若未找到任何记录，会返回空
+	_, err := o.QueryTable("user").Filter("username", username).All(&users) // 用.One()时若未找到任何记录，会返回空
 	if err == nil {
 		return users, err
-	} else {  // 测试时要注意一点，就是返回的结果会有0条这种情形吗，当没有一个用户名相匹配时。要是实在不行，就改回用切片配all
+	} else { // 测试时要注意一点，就是返回的结果会有0条这种情形吗，当没有一个用户名相匹配时。要是实在不行，就改回用切片配all
 		return users, err
 	}
 }
@@ -42,7 +43,7 @@ func (u *User) FindByUsername(username string) ([]*User, error) {
 func (m *User) UpdateCredit(credit int) {
 	o := orm.NewOrm()
 	// 先读出来
-	user_id_from_session, _ := strconv.Atoi(c.GetSession("userid").(string))  // 【？】.(string)是什么意思，可以直接写.(int)吗
+	user_id_from_session, _ := strconv.Atoi(c.GetSession("userid").(string)) // 【？】.(string)是什么意思，可以直接写.(int)吗
 	user := User{Id: user_id_from_session}
 	if err := o.Read(&user, "id"); err == nil {
 		// 再更新
@@ -69,12 +70,12 @@ func (m *User) Signup(username string, password string) (int, error) {
 	nickname := strings.Split(username, "@")[0]
 	avatar := "(" + strconv.Itoa(rand.Intn(14)) + ")" + ".svg"
 	user := User{
-		Username: username,
-		Password: password,
-		Role: "user",
-		Credit: 50,
-		Nickname: nickname,
-		Avatar: avatar,
+		Username:   username,
+		Password:   password,
+		Role:       "user",
+		Credit:     50,
+		Nickname:   nickname,
+		Avatar:     avatar,
 		CreateTime: now,
 		UpdateTime: now,
 	}

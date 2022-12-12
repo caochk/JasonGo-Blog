@@ -6,8 +6,8 @@ import (
 )
 
 type Article struct {
-	Id         int `orm:"pk"`
-	Category   int8
+	Id         int  `orm:"pk"`
+	Category   int8 `orm:"index"`
 	Headline   string
 	Content    string
 	Thumbnail  string
